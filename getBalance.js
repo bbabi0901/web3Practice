@@ -72,10 +72,32 @@ const getTxByAcc = async (account, startBlock, endBlock) => {
   console.log(result);
 };
 
+// (async () => {
+//   console.time("foreach");
+//   await getTxByAcc(GOERLI_ADDRESS, blockNum - 3, blockNum + 3);
+//   console.timeEnd("foreach");
+// })();
+
+const getTxByAccObj = async (account, startBlock, endBlock) => {
+  const result = [];
+  for (let blockNum = startBlock; blockNum <= endBlock; blockNum++) {
+    const block = await web3.eth.getBlock(blockNum);
+    block.transactions.forEach(async (txId) => {
+      const tx = await web3.eth.getTransaction(txId);
+      if (tx.from === account || tx.to === account) {
+        const txInfo = { hash: tx.hash, nonce: tx.nonce };
+        txInfo.type = tx.from === account ? "from" : "to";
+        result.push(txInfo);
+      }
+    });
+  }
+  console.log(result);
+};
+
 (async () => {
-  console.time("foreach");
-  await getTxByAcc(GOERLI_ADDRESS, blockNum - 3, blockNum + 3);
-  console.timeEnd("foreach");
+  console.time("foreachObj");
+  await getTxByAccObj(GOERLI_ADDRESS, blockNum - 3, blockNum + 3);
+  console.timeEnd("foreachObj");
 })();
 
 // forEach는 배열 요소를 돌면서 callback을 실행할 뿐, 한 callback이 끝날 때까지 기다렸다가 다음 callback을 실행하는 것이 아니다
